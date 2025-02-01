@@ -20,4 +20,6 @@ jobs:
             docker compose up -d
             cd ../clothing-search-automation
             git pull
+            npm install
+            npm run build
             pm2 restart npm
