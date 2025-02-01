@@ -36,8 +36,8 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
               >
                 Visit Website
               </a>
-              <p className="mt-2 text-lg font-semibold">
-                ${result.price.toFixed(2)}
+              <p className="mt-2 text-lg font-semibold text-black">
+                {result.price}
               </p>
             </div>
           </div>
