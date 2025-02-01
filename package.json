@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npx playwright install chromium && npx playwright install-deps"
+    "postinstall": "npx playwright install chromium && sudo npx playwright install-deps"
   },
   "dependencies": {
     "react": "^19.0.0",
