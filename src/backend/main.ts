@@ -69,8 +69,8 @@ const extractFirstImage = async (items: Item[]) => {
 
       console.log(`Extraction for ${item.websiteUrl} is ${status}`);
 
-      // Find first image URL that starts with 'https://'
-      const productImageUrl = images.find((image) => image.url.startsWith('https://'))?.url;
+      // Find first image URL is a valid image URL
+      const productImageUrl = images.find((image) => image.url.match(/\.(jpeg|jpg|gif|png)$/))?.url;
 
       console.log(productImageUrl);
 
@@ -181,6 +181,7 @@ export async function main({
   //   {
   //     websiteUrl: 'https://www.depop.com/products/rewindtynevintage-polo-ralph-lauren-14/',
   //     price: '£10.00',
+  //     imageUrl: 'https://d2h1pu99sxkfvn.cloudfront.net/b0/239/101/0/1d3b-4b3b-4b3b-4b3b-4b3b4b3b4b3b.jpg',
   //   },
   //   {
   //     websiteUrl: 'https://www.depop.com/products/jbswardrobe-chaps-jumper-cream-chaps-quarter-8002/',

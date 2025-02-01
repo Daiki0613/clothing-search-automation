@@ -5,6 +5,7 @@ import ImageUploader from "../components/ImageUploader";
 import ResultDisplay from "../components/ResultDisplay";
 
 export default function Home() {
+  const [caption, setCaption] = useState<string | null>(null);
   const [results, setResults] = useState<Array<{
     imageUrl: string;
     websiteUrl: string;
@@ -13,25 +14,46 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (file: File, base64Image: string) => {
     setIsLoading(true);
     setError(null);
-
-    const formData = new FormData();
-    formData.append("image", file);
-
+  
     try {
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/api/get_caption", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json", // ✅ Explicitly set JSON content type
+        },
+        body: JSON.stringify({ base64_image: base64Image }), // ✅ Send as JSON
       });
-
+  
       if (!response.ok) {
         throw new Error("Upload failed");
       }
-
+  
       const data = await response.json();
-      setResults(data.results);
+      console.log(data.caption);
+      // setCaption(data.caption);
+
+      try {
+        const response2 = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // ✅ Explicitly set JSON content type
+          },
+          body: JSON.stringify({ caption: data.caption }), // ✅ Send as JSON
+        });
+  
+        if (!response2.ok) {
+          throw new Error("Upload failed");
+        }
+  
+        const data2 = await response2.json();
+        setResults(data2.results);
+      } catch (err) {
+        setError("An error occurred while uploading the image.");
+        console.error(err);
+      }
     } catch (err) {
       setError("An error occurred while uploading the image.");
       console.error(err);
@@ -48,6 +70,7 @@ export default function Home() {
       <ImageUploader onUpload={handleUpload} />
       {isLoading && <p className="text-center mt-4">Processing image...</p>}
       {error && <p className="text-center mt-4 text-red-500">{error}</p>}
+      {/* {results && <ResultDisplay results={results} />} */}
       {results && <ResultDisplay results={results} />}
     </main>
   );

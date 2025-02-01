@@ -4,7 +4,8 @@ import { useState, type ChangeEvent } from "react";
 import Image from "next/image";
 
 interface ImageUploaderProps {
-  onUpload: (file: File) => void;
+  onUpload: (file: File, base64: string) => void; // Pass base64 to parent
+  // onUpload: (file: File) => void;
 }
 
 export default function ImageUploader({ onUpload }: ImageUploaderProps) {
@@ -29,9 +30,22 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (selectedFile) {
-      onUpload(selectedFile);
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Image = reader.result as string; // Base64 string
+        // Pass the file and base64 string to the parent component
+        onUpload(selectedFile, base64Image);
+      };
+      reader.readAsDataURL(selectedFile); // Convert the selected file to base64
     }
   };
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (selectedFile) {
+  //     onUpload(selectedFile);
+  //   }
+  // };
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">

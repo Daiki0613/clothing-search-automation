@@ -1,12 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { run as run_stagehand_app } from "../../../backend/index";
 
-// Write function to call open AI given base64 image return caption
-
 export async function POST(req: NextRequest) {
-  const searchString = "black quarter zip";
+  try {
+    // Parse the incoming JSON body
+    const body = await req.json();
+    const { caption } = body;
+    // const searchString = "black quarter zip";
+    
+    console.log("Caption:", caption);
+    
+    const results = await run_stagehand_app(caption);
 
-  const results = await run_stagehand_app(searchString);
-
-  return NextResponse.json({ results: results });
+    return NextResponse.json({ results: results });
+  } catch (error) {
+    console.error("Error during POST request:", error);
+    return NextResponse.json({ error: "Failed to process image caption" }, { status: 500 });
+  }
 }
