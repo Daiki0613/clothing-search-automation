@@ -10,11 +10,11 @@
  */
 
 import { Stagehand } from "@browserbasehq/stagehand";
-import StagehandConfig from "./stagehand.config.js";
+import StagehandConfig from "./stagehand.config";
 // import chalk from "chalk";
-import { main } from "./main.js";
+import { main } from "./main";
 // import boxen from "boxen";
-import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime.js";
+// import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime.js";
 
 export async function run(search_string: string) {
   const stagehand = new Stagehand({
@@ -37,7 +37,7 @@ export async function run(search_string: string) {
   //   );
   // }
 
-  console.log("Entered index.ts")
+  console.log("Entered index.ts");
 
   const page = stagehand.page;
   const context = stagehand.context;
@@ -48,7 +48,6 @@ export async function run(search_string: string) {
     search_string,
   });
   await stagehand.close();
-  
 }
 
 // run();

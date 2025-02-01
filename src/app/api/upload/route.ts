@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { run } from "../../../backend/backend_app/index";
+import { run } from "../../../backend/index";
 
 // Write function to call open AI given base64 image return caption
-
 
 export async function POST(req: NextRequest) {
   const str = "cream quarter zip";
