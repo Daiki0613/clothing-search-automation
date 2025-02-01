@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Map } from "react-map-gl/maplibre";
+import { Map, Source, Layer } from "react-map-gl/maplibre";
 import { AmbientLight, PointLight, LightingEffect } from "@deck.gl/core";
 import { HexagonLayer } from "@deck.gl/aggregation-layers";
+import { GeoJsonLayer } from "@deck.gl/layers";
 import DeckGL from "@deck.gl/react";
 import { CSVLoader } from "@loaders.gl/csv";
 import { load } from "@loaders.gl/core";
@@ -75,11 +76,101 @@ function getTooltip({ object }: PickingInfo) {
 
 type DataPoint = [longitude: number, latitude: number];
 
-// Example borough boundaries (simplified)
+// Approximate bounding boxes for a few London boroughs
 const boroughs = {
-  Borough1: { north: 51.55, south: 51.45, west: -0.15, east: -0.05 },
-  Borough2: { north: 51.45, south: 51.35, west: -0.15, east: -0.05 },
-  // Add more boroughs as needed
+  Camden: {
+    north: 51.57,
+    south: 51.53,
+    west: -0.16,
+    east: -0.11,
+  },
+  Westminster: {
+    north: 51.52,
+    south: 51.49,
+    west: -0.15,
+    east: -0.11,
+  },
+  Lambeth: {
+    north: 51.49,
+    south: 51.45,
+    west: -0.12,
+    east: -0.04,
+  },
+};
+
+const geojson = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-0.16, 51.57],
+            [-0.12, 51.58],
+            [-0.11, 51.57],
+            [-0.09, 51.55],
+            [-0.1, 51.54],
+            [-0.14, 51.53],
+            [-0.16, 51.53],
+            [-0.16, 51.55],
+            [-0.16, 51.57],
+          ],
+        ],
+      },
+      properties: {
+        name: "Camden",
+        colour: [255, 0, 0],
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-0.15, 51.52],
+            [-0.13, 51.53],
+            [-0.11, 51.52],
+            [-0.1, 51.51],
+            [-0.09, 51.5],
+            [-0.1, 51.49],
+            [-0.12, 51.49],
+            [-0.14, 51.5],
+            [-0.15, 51.52],
+          ],
+        ],
+      },
+      properties: {
+        name: "Westminster",
+        colour: [0, 255, 0],
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-0.12, 51.49],
+            [-0.08, 51.49],
+            [-0.05, 51.48],
+            [-0.04, 51.46],
+            [-0.05, 51.45],
+            [-0.09, 51.45],
+            [-0.12, 51.46],
+            [-0.12, 51.47],
+            [-0.12, 51.49],
+          ],
+        ],
+      },
+      properties: {
+        name: "Lambeth",
+        colour: [0, 0, 255],
+      },
+    },
+  ],
 };
 
 export default function App({
@@ -137,6 +228,15 @@ export default function App({
         elevationScale: 3000,
       },
     }),
+    // new GeoJsonLayer({
+    //     id: 'geojson-layer',
+    //     data: geojson as GeoJSON,
+    //     getFillColor: [0, 0, 0, 0], // Transparent fill
+    //     getLineColor: (d: any) => d.properties.color,
+    //     pickable: true,
+    //     lineWidthMinPixels: 1,
+    //     getLineWidth: 2
+    // })
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,17 +261,43 @@ export default function App({
     setBarRadius(parseFloat(e.target.value));
   };
 
+  const layerStyle = {
+    id: "boroughs-layer",
+    type: "fill",
+    paint: {
+      // Use a match expression to assign a colour based on the borough name
+      "fill-color": [
+        "match",
+        ["get", "name"],
+        "Camden",
+        "#FF0000", // Camden in red
+        "Westminster",
+        "#00FF00", // Westminster in green
+        "Lambeth",
+        "#0000FF", // Lambeth in blue
+        "#CCCCCC", // Fallback colour
+      ],
+      "fill-opacity": 0.5,
+    },
+  };
+
   return (
     <div>
       <DeckGL
         layers={layers}
         effects={[lightingEffect]}
         viewState={viewState}
-        onViewStateChange={({ viewState }) => setViewState(viewState)}
+        onViewStateChange={({ viewState }: { viewState: MapViewState }) =>
+          setViewState(viewState)
+        }
         controller={{ dragRotate: true }}
         getTooltip={getTooltip}
       >
-        <Map reuseMaps mapStyle={mapStyle} />
+        <Map reuseMaps mapStyle={mapStyle}>
+          <Source id="london-boroughs" type="geojson" data={geojson}>
+            <Layer {...layerStyle} />
+          </Source>
+        </Map>
       </DeckGL>
       <div
         style={{
@@ -275,6 +401,7 @@ export async function renderToDOM(container: HTMLDivElement) {
   root.render(<App />);
 
   const data = (await load(DATA_URL, CSVLoader)).data;
+
   const londonBounds = {
     north: 51.686,
     south: 51.286,
@@ -282,12 +409,12 @@ export async function renderToDOM(container: HTMLDivElement) {
     east: 0.334,
   };
   const points: DataPoint[] = data
-    .map((d) =>
+    .map((d: any) =>
       Number.isFinite(d.lng) && Number.isFinite(d.lat) ? [d.lng, d.lat] : null
     )
     .filter(
-      (d) =>
-        d &&
+      (d: DataPoint | null): d is DataPoint =>
+        d !== null &&
         d[0] >= londonBounds.west &&
         d[0] <= londonBounds.east &&
         d[1] >= londonBounds.south &&
