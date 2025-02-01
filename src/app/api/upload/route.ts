@@ -5,7 +5,7 @@ import { run } from "../../../backend/index";
 
 export async function POST(req: NextRequest) {
   const str = "cream quarter zip";
-  run(str);
+  await run(str);
 
   // In a real application, you would process the uploaded image here
   // and generate results based on the image analysis
