@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "npx playwright install chromium && sudo npx playwright install-deps"
+    "lint": "next lint"
   },
   "dependencies": {
     "@browserbasehq/sdk": "2.2.0",
