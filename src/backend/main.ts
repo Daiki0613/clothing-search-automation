@@ -1,34 +1,13 @@
-/**
- * 🤘 Welcome to Stagehand!
- *
- * TO RUN THIS PROJECT:
- * ```
- * npm install
- * npm run start
- * ```
- *
- * To edit config, see `stagehand.config.ts`
- *
- * In this quickstart, we'll be automating a browser session to show you the power of Playwright and Stagehand's AI features.
- *
- * 1. Go to https://docs.browserbase.com/
- * 2. Use `extract` to find information about the quickstart
- * 3. Use `observe` to find the links under the 'Guides' section
- * 4. Use Playwright to click the first link. If it fails, use `act` to gracefully fallback to Stagehand AI.
- */
-
 import { Page, BrowserContext, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
-// import chalk from "chalk";
-// import boxen from "boxen";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-
 interface Item {
-  productUrl: string;
+  websiteUrl: string;
   price: string;
+  imageUrl?: string;
 }
 
 interface ExtractionResponse {
@@ -36,7 +15,10 @@ interface ExtractionResponse {
     id: string;
     status: string;
     url: string;
-    images: string[];
+    images: {
+      url: string;
+      id: string;
+    }[];
     created_at: string;
     project_id: string;
   };
@@ -45,11 +27,11 @@ interface ExtractionResponse {
 const API_KEY = process.env.API_KEY;
 
 const extractFirstImage = async (items: Item[]) => {
-  const results: Record<string, string | null> = {};
+  const results: Record<string, { url: string } | null> = {};
 
   for (const item of items) {
     try {
-      console.log(`Extracting image for ${item.productUrl}`);
+      console.log(`Extracting image for ${item.websiteUrl}`);
       // Start extraction
       const startRes = await fetch('https://api.extract.pics/v0/extractions', {
         method: 'POST',
@@ -57,20 +39,20 @@ const extractFirstImage = async (items: Item[]) => {
           Authorization: `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: item.productUrl }),
+        body: JSON.stringify({ url: item.websiteUrl }),
       });
-      
+
       const startJson: ExtractionResponse = await startRes.json();
       if (!startRes.ok) {
-        console.error(`Failed to start extraction for ${item.productUrl}`, startJson);
-        results[item.productUrl] = null;
+        console.error(`Failed to start extraction for ${item.websiteUrl}`, startJson);
+        results[item.websiteUrl] = null;
         continue;
       }
-      
+
       const id = startJson.data.id;
       let status = 'pending';
-      let images: string[] = [];
-      
+      let images: { url: string; id: string }[] = [];
+
       // Poll for extraction status
       while (status !== 'done' && status !== 'error') {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -79,20 +61,34 @@ const extractFirstImage = async (items: Item[]) => {
           method: 'GET',
           headers: { Authorization: `Bearer ${API_KEY}` },
         });
-        
+
         const statusJson: ExtractionResponse = await statusRes.json();
         status = statusJson.data.status;
         images = statusJson.data.images;
       }
-      
-      results[item.productUrl] = images.length > 0 ? images[0] : null;
+
+      console.log(`Extraction for ${item.websiteUrl} is ${status}`);
+
+      // Find first image URL that starts with 'https://'
+      const productImageUrl = images.find((image) => image.url.startsWith('https://'))?.url;
+
+      console.log(productImageUrl);
+
+      results[item.websiteUrl] = productImageUrl ? { url: productImageUrl } : null;
     } catch (error) {
-      console.error(`Error processing ${item.productUrl}:`, error);
-      results[item.productUrl] = null;
+      console.error(`Error processing ${item.websiteUrl}:`, error);
+      results[item.websiteUrl] = null;
     }
   }
 
-  return results;
+  // Add results.url to items as a new imageUrl property
+  const itemsWithImages = items.map((item) => ({
+    websiteUrl: item.websiteUrl,
+    price: item.price,
+    imageUrl: results[item.websiteUrl]?.url || null, // Ensure safe access
+  }));
+
+  return itemsWithImages;
 };
 
 
@@ -108,12 +104,14 @@ export async function main({
   search_string: string;
 }) {
 
-  console.log("Entered main.ts"); 
+  console.log("Entered main.ts");
 
   // Start time
   const startTime = new Date();
 
   // const url = "https://www.vinted.co.uk/";
+  // const url = "https://www.amazon.co.uk/";
+  // const url = "https://www.ebay.co.uk/";
   const url = "https://www.depop.com/";
 
   await page.goto(url, {
@@ -146,20 +144,20 @@ export async function main({
 
   // TODO: CHANGE TO 5 / 10 when testing properly 
   const items = await page.extract({
-    instruction: "Extract the product URL and price for the first 2 items in the search results",
+    instruction: "Extract the product URL (and not just endpoint) and price for the first 2 items in the search results",
     schema: z.object({
       items: z.array(
         z.object({
-          productUrl: z.string(),
+          websiteUrl: z.string(),
           price: z.string(),
         })
       ),
     }),
   }).then((details) => {
     details.items.forEach((item, index) => {
-      item.productUrl = url.substring(0, url.length - 1) + item.productUrl;
+      // item.websiteUrl = url.substring(0, url.length - 1) + item.websiteUrl;
       console.log(
-        `\n\n\nItem ${index + 1}:\nProduct URL: ${item.productUrl}\nPrice: ${item.price}`,
+        `\n\n\nItem ${index + 1}:\nProduct URL: ${item.websiteUrl}\nPrice: ${item.price}`,
         "Extract"
       )
     });
@@ -174,32 +172,27 @@ export async function main({
   console.log(`\n\n\nThe script took ${timeDiffSeconds} seconds to run`, "Time");
 
   
+
   console.log(items);
 
-  // API Base URL
-  const imageExtractorAPI = "https://api.extract.pics/v0"
 
   // Set items for debugging:
-  const testItems: Item[] = [
-    {
-      productUrl: 'https://www.depop.com/products/rewindtynevintage-polo-ralph-lauren-14/',
-      price: '£10.00'
-    },
-    {
-      productUrl: 'https://www.depop.com/products/jbswardrobe-chaps-jumper-cream-chaps-quarter-8002/',
-      price: '£28.00'
-    }
-  ]
+  // const testItems: Item[] = [
+  //   {
+  //     websiteUrl: 'https://www.depop.com/products/rewindtynevintage-polo-ralph-lauren-14/',
+  //     price: '£10.00',
+  //   },
+  //   {
+  //     websiteUrl: 'https://www.depop.com/products/jbswardrobe-chaps-jumper-cream-chaps-quarter-8002/',
+  //     price: '£28.00',
+  //   }
+  // ]
 
-  extractFirstImage(items).then(console.log);
+  const itemsWithImageUrls = await extractFirstImage(items);
+
+
+  console.log("*******ITEMS WITH IMAGE URLS*******");
+  console.log(itemsWithImageUrls);
+
+  return itemsWithImageUrls;
 }
-
-// function announce(message: string, title?: string) {
-//   console.log(
-//     boxen(message, {
-//       padding: 1,
-//       margin: 3,
-//       title: title || "Stagehand",
-//     })
-//   );
-// }
