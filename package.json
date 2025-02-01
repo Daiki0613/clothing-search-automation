@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "heroku-cleanup": "npx playwright install chromium"
+    "heroku-cleanup": "yarn run playwright install chromium"
   },
   "dependencies": {
     "react": "^19.0.0",
