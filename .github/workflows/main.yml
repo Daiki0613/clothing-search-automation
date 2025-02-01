@@ -19,4 +19,5 @@ jobs:
             cd /srv/vaquitas/config
             docker compose up -d
             cd ../clothing-search-automation
+            git pull
             pm2 restart npm
