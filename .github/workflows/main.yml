@@ -22,4 +22,5 @@ jobs:
             git pull
             npm install
             npm run build
-            pm2 restart npm
+            # ./start.sh
+            DISPLAY=:99 pm2 restart npm
