@@ -12,19 +12,23 @@
     "@browserbasehq/sdk": "2.2.0",
     "@browserbasehq/stagehand": "1.11.0",
     "@playwright/test": "^1.49.1",
+    "@radix-ui/react-progress": "^1.1.1",
     "axios": "^1.7.9",
     "boxen": "^8.0.1",
     "browser-image-compression": "^2.0.2",
     "chalk": "^5.3.0",
     "chromedriver": "^132.0.2",
+    "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "faker": "^6.6.6",
+    "framer-motion": "^12.0.6",
     "next": "15.1.6",
     "openai": "^4.82.0",
     "puppeteer": "^24.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "selenium-webdriver": "^4.28.1",
+    "tailwind-merge": "^3.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -38,5 +42,6 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
-  }
+  },
+  "type": "module"
 }

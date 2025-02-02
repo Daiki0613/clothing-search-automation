@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ImageUploader from "../components/ImageUploader";
 import ResultDisplay from "../components/ResultDisplay";
+import LoadingUI from "../components/LoadingUI";
 
 export default function Home() {
   const [caption, setCaption] = useState<string | null>(null);
@@ -13,49 +14,68 @@ export default function Home() {
   }> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   const handleUpload = async (file: File, base64Image: string) => {
     setIsLoading(true);
     setError(null);
-  
+    setProgress(0);
+
     try {
+      // Start progress simulation
+      const progressInterval = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 95) {
+            clearInterval(progressInterval);
+            return prevProgress;
+          }
+          return prevProgress + Math.random() * 2;
+        });
+      }, 1000);
+
+      // First API call
       const response = await fetch("/api/get_caption", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // ✅ Explicitly set JSON content type
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ base64_image: base64Image }), // ✅ Send as JSON
+        body: JSON.stringify({ base64_image: base64Image }),
       });
-  
+
       if (!response.ok) {
-        throw new Error("Upload failed");
+        throw new Error("Caption generation failed");
       }
-  
+
       const data = await response.json();
       console.log(data.caption);
-      // setCaption(data.caption);
+      setCaption(data.caption);
 
-      try {
-        const response2 = await fetch("/api/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json", // ✅ Explicitly set JSON content type
-          },
-          body: JSON.stringify({ caption: data.caption }), // ✅ Send as JSON
-        });
-  
-        if (!response2.ok) {
-          throw new Error("Upload failed");
-        }
-  
-        const data2 = await response2.json();
-        setResults(data2.results);
-      } catch (err) {
-        setError("An error occurred while uploading the image.");
-        console.error(err);
+      // Second API call
+      const response2 = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ caption: data.caption }),
+      });
+
+      if (!response2.ok) {
+        throw new Error("Upload failed");
       }
+
+      const data2 = await response2.json();
+
+      // Clear interval and set to 100%
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      // Delay setting results for a smooth transition
+      setTimeout(() => {
+        setResults(data2.results);
+        setIsLoading(false);
+      }, 1000);
     } catch (err) {
-      setError("An error occurred while uploading the image.");
+      setError("An error occurred while processing the image.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -64,12 +84,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 py-12 px-4">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Image Upload and Analysis
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-8">AI Image Analyzer</h1>
       <ImageUploader onUpload={handleUpload} />
-      {isLoading && <p className="text-center mt-4">Processing image...</p>}
-      {error && <p className="text-center mt-4 text-red-500">{error}</p>}
+      {isLoading && <LoadingUI progress={progress} />}
+      {error && (
+        <div className="max-w-md mx-auto mt-8 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
       {results && <ResultDisplay results={results} />}
     </main>
   );
