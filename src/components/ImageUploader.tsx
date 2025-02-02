@@ -2,25 +2,49 @@
 
 import { useState, type ChangeEvent } from "react";
 import Image from "next/image";
+import imageCompression from "browser-image-compression";
 
 interface ImageUploaderProps {
   onUpload: (file: File, base64: string) => void; // Pass base64 to parent
-  // onUpload: (file: File) => void;
 }
 
 export default function ImageUploader({ onUpload }: ImageUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+      // Check file size and compress if larger than 10MB
+      if (file.size > 10 * 1024 * 1024) {
+        try {
+          const options = {
+            maxSizeMB: 10,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          };
+          const compressedFile = await imageCompression(file, options);
+
+          // Set the compressed file preview
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setPreview(reader.result as string);
+          };
+          reader.readAsDataURL(compressedFile);
+          setSelectedFile(compressedFile); // Update selectedFile to the compressed file
+        } catch (error) {
+          console.error("Error during image compression:", error);
+        }
+      } else {
+        // Handle normal file preview if no compression needed
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     } else {
       setSelectedFile(null);
       setPreview(null);
@@ -40,12 +64,6 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
       reader.readAsDataURL(selectedFile); // Convert the selected file to base64
     }
   };
-  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   if (selectedFile) {
-  //     onUpload(selectedFile);
-  //   }
-  // };
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
