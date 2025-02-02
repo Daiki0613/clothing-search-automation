@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo", // GPT-4 Turbo supports vision-based tasks
       messages: [
-        { role: "developer", content: "You are an AI that accurately describes the most prevalant clothing item in the image in three or less words, including colour and using the most commonly used casual term. If there is a zip that is a quarter way down from the top of the item, then it is most likely a quarter zip and not a turtleneck." },
+        { role: "developer", content: "You are an AI that accurately describes the most prevalant clothing item in the image in three or less words, including colour and using the most commonly used casual term. If there is a zip that is a quarter way down from the top of the item, then it is most likely a quarter zip and not a turtleneck. Ensure the returned label is in lowercase and has minimal punctuation." },
         {
           role: "user",
           content: [

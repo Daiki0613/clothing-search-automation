@@ -62,23 +62,6 @@ export default function Home() {
 
       const data2: ImageCaptionResult[] = (await response2.json()).results;
 
-      // const data2: ImageCaptionResult[] = [
-      //   {
-      //     imageUrl:
-      //       "https://media-photos.depop.com/b1/13343146/2404240354_d658ed1e56f34c4fb5ab02a158ac0f17/P0.jpg",
-      //     websiteUrl:
-      //       "https://www.depop.com/products/alicat77-cute-pink-strawberry-turtleneck-cropped/",
-      //     price: "£5.00",
-      //   },
-      //   {
-      //     imageUrl:
-      //       "https://media-photos.depop.com/b0/4134705/833630542_f3e2dea0e5f841d8b8c9fd71ca795129/P0.jpg",
-      //     websiteUrl:
-      //       "https://www.depop.com/products/lailakricha-pink-roll-neck-jumper-never/",
-      //     price: "£18.00",
-      //   },
-      // ];
-
       console.log(data2);
       // Third API call
       const results: Result[] = await Promise.all(
