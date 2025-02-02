@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 export async function scrapeFirstImageUrl(url: string) {
   // Launch Puppeteer browser instance
