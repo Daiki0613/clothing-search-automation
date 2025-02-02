@@ -1,11 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-
-interface Result {
-  imageUrl: string;
-  websiteUrl: string;
-  price: number;
-}
+import { Result } from "@/app/types";
 
 interface ResultDisplayProps {
   results: Result[];

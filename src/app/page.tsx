@@ -4,14 +4,11 @@ import { useState } from "react";
 import ImageUploader from "../components/ImageUploader";
 import ResultDisplay from "../components/ResultDisplay";
 import LoadingUI from "../components/LoadingUI";
+import { ComparisonResult, ImageCaptionResult, Result } from "./types";
 
 export default function Home() {
   const [caption, setCaption] = useState<string | null>(null);
-  const [results, setResults] = useState<Array<{
-    imageUrl: string;
-    websiteUrl: string;
-    price: number;
-  }> | null>(null);
+  const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -63,17 +60,44 @@ export default function Home() {
         throw new Error("Upload failed");
       }
 
-      const data2 = await response2.json();
+      const data2: ImageCaptionResult[] = (await response2.json()).results;
 
+      console.log(data2);
+      // Third API call
+      const results: Result[] = await Promise.all(
+        data2.map(async (result) => {
+          if (!result.imageUrl) {
+            return result;
+          }
+          try {
+            const response3 = await fetch("/api/get_comparison", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                targetImagePath: base64Image,
+                foundImagePath: result.imageUrl,
+              }),
+            });
+
+            const data3: ComparisonResult = await response3.json();
+            return {
+              ...result,
+              ...data3,
+            };
+          } catch (err) {
+            console.error("Comparison failed for image:", result.imageUrl, err);
+            return result; // Return the original result without comparison data if the API call fails
+          }
+        })
+      );
+      console.log(results);
+
+      setResults(results);
       // Clear interval and set to 100%
       clearInterval(progressInterval);
       setProgress(100);
-
-      // Delay setting results for a smooth transition
-      setTimeout(() => {
-        setResults(data2.results);
-        setIsLoading(false);
-      }, 1000);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";

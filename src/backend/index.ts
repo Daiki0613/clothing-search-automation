@@ -12,8 +12,11 @@
 import { Stagehand } from "@browserbasehq/stagehand";
 import StagehandConfig from "./stagehand.config";
 import { main } from "./main";
+import { ImageCaptionResult } from "@/app/types";
 
-export async function run(search_string: string) {
+export async function run(
+  search_string: string
+): Promise<ImageCaptionResult[]> {
   const stagehand = new Stagehand({
     ...StagehandConfig,
   });
