@@ -1,11 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-
-interface Result {
-  imageUrl: string;
-  websiteUrl: string;
-  price: number;
-}
+import { Result } from "@/app/types";
 
 interface ResultDisplayProps {
   results: Result[];
@@ -47,7 +42,7 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
             </div>
             <div className="p-4">
               <p className="text-lg font-semibold text-gray-800">
-                ${result.price.toFixed(2)}
+                ${result.price}
               </p>
               <p className="text-sm text-gray-600 mt-1">
                 Similar product found
