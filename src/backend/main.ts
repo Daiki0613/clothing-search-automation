@@ -1,5 +1,5 @@
 import { Page, BrowserContext, Stagehand } from "@browserbasehq/stagehand";
-import { z } from "zod";
+import { number, z } from "zod";
 import dotenv from "dotenv";
 import { scrapeFirstImageUrl } from "./scrape_img_urls";
 
@@ -98,22 +98,27 @@ export async function main({
   page,
   context,
   stagehand,
-  search_string,
+  searchString,
+  numberOfItems,
+  website,
+  sortBy,
 }: {
   page: Page; // Playwright Page with act, extract, and observe methods
   context: BrowserContext; // Playwright BrowserContext
   stagehand: Stagehand; // Stagehand instance
-  search_string: string;
+  searchString: string;
+  numberOfItems: number;
+  website: string;
+  sortBy: string;
 }) {
   console.log("Entered main.ts");
 
   // Start time
   const startTime = new Date();
 
-  // const url = "https://www.vinted.co.uk/";
-  // const url = "https://www.amazon.co.uk/";
-  // const url = "https://www.ebay.co.uk/";
-  const url = "https://www.depop.com/";
+  const url = website.toLowerCase() == "ALL" 
+    ? "https://www.depop.com/" 
+    : `https://www.${website}.com/`;
 
   await page
     .goto(url, {
@@ -128,31 +133,32 @@ export async function main({
 
   await page
     .act({
-      action: `Submit '${search_string}' in the main search input field and click enter`,
+      action: `Submit '${searchString}' in the main search input field and click enter`,
     })
     .then(() => {
       console.log(
-        `\n\n\nSearch for '${search_string}' submitted successfully`,
+        `\n\n\nSearch for '${searchString}' submitted successfully`,
         "Search"
       );
     })
     .catch((error) => {
-      console.error(`Failed to submit search for '${search_string}':`, error);
+      console.error(`Failed to submit search for '${searchString}':`, error);
     });
 
-  // await page.act({
-  //   action: "Sort search results by price from low to high (ascending)",
-  // }).then(() => {
-  //   announce("Search results sorted by price successfully", "Sort");
-  // }).catch((error) => {
-  //   console.error("Failed to sort search results by price:", error);
-  // });
+  if (sortBy === "Cheapest") {
+    await page.act({
+      action: "Sort search results by price from low to high (ascending)",
+    }).then(() => {
+      console.log("Search results sorted by price successfully", "Sort");
+    }).catch((error) => {
+      console.error("Failed to sort search results by price:", error);
+    });
+  }
 
-  // TODO: CHANGE TO 5 / 10 when testing properly
   const items = await page
     .extract({
       instruction:
-        "Extract the product URL (and not just endpoint) and price for the first 10 items in the search results",
+        `Extract the product URL (and not just endpoint) and price for the first ${numberOfItems} items in the search results`,
       schema: z.object({
         items: z.array(
           z.object({

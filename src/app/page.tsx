@@ -8,17 +8,25 @@ import { ComparisonResult, ImageCaptionResult, Result } from "./types";
 
 export default function Home() {
   const [caption, setCaption] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [formData, setFormData] = useState({
+      itemCount: 1,
+      website: "Depop",
+      sortBy: "Relevance",
+    })
 
-  const handleUpload = async (file: File, base64Image: string) => {
+  const handleUpload = async (file: File, base64Image: string, formData: any) => {
     setIsLoading(true);
     setError(null);
     setProgress(0);
 
     try {
+      console.log(formData);
+
       // Start progress simulation
       const progressInterval = setInterval(() => {
         setProgress((prevProgress) => {
@@ -53,7 +61,12 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ caption: data.caption }),
+        body: JSON.stringify({ 
+          caption: data.caption,
+          itemCount: formData.itemCount,
+          website: formData.website,
+          sortBy: formData.sortBy,
+        }),
       });
 
       if (!response2.ok) {
@@ -97,8 +110,10 @@ export default function Home() {
 
       setResults(results);
       // Clear interval and set to 100%
-      clearInterval(progressInterval);
       setProgress(100);
+      clearInterval(progressInterval);
+      // Wait 500ms
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";
@@ -111,9 +126,37 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 py-12 px-4">
-      <h1 className="text-3xl font-bold text-center mb-8">AI Image Analyzer</h1>
-      <ImageUploader onUpload={handleUpload} />
-      {isLoading && <LoadingUI progress={progress} />}
+      <div className="flex justify-center mb-8">
+        <img src="/garmai_logo.png" alt="Garmai Logo" className="h-36" />
+      </div>
+      <h1 className="text-3xl font-bold text-center mb-8 text-black">AI Image Analyser</h1>
+      {!isLoading && 
+        <ImageUploader 
+          preview={preview} 
+          setPreview={setPreview}
+          isLoading 
+          onUpload={handleUpload} 
+          setResults={setResults}
+          formData={formData}
+          setFormData={setFormData}
+        />
+      }
+      {/* TODO: CENTRE PLEASE */}
+      {(isLoading) &&
+        (
+          <div className="flex flex-col items-center justify-center h-full space-y-4">
+            <div className="flex items-center space-x-4 bg-gray-100 p-4 rounded-lg w-full">
+              <img src={preview || "/placeholder.svg"} alt="Selected" className="w-16 h-16 object-cover rounded" />
+              <div className="flex-1">
+                <p className="font-semibold">{formData.itemCount} item(s)</p>
+                <p className="text-sm text-gray-600">on {formData.website}</p>
+                <p className="text-sm text-gray-600">Sort by: {formData.sortBy}</p>
+              </div>
+            </div>
+            <LoadingUI progress={progress} />
+          </div>
+        )
+      }
       {error && (
         <div className="max-w-md mx-auto mt-8 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
           <p className="text-red-700">{error}</p>

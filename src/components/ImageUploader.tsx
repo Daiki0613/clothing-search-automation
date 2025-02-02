@@ -3,14 +3,33 @@
 import { useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { Camera, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface ImageUploaderProps {
-  onUpload: (file: File, base64: string) => void | Promise<void>;
+  preview: string | null;
+  setPreview: (preview: string | null) => void;
+  isLoading: boolean;
+  onUpload: (file: File, base64: string, formData: any) => void | Promise<void>;
+  setResults: (results: any) => void;
+  formData: any;
+  setFormData: (formData: any) => void;
 }
 
-export default function ImageUploader({ onUpload }: ImageUploaderProps) {
+export default function ImageUploader({ 
+  preview, 
+  setPreview,
+  isLoading,
+  onUpload, 
+  setResults,
+  formData,
+  setFormData,
+}: ImageUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +46,19 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
       setPreview(null);
     }
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev: any) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev: any) => ({ ...prev, website: value }))
+  }
+
+  const handleRadioChange = (value: string) => {
+    setFormData((prev: any) => ({ ...prev, sortBy: value }))
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
@@ -55,8 +87,9 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (selectedFile) {
-      onUpload(selectedFile, preview || "");
+      onUpload(selectedFile, preview || "", formData);
     }
+    setResults([]);
   };
 
   return (
@@ -111,7 +144,7 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
                 <span className="font-semibold">Click to upload</span> or drag
                 and drop
               </p>
-              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 2MB</p>
             </div>
             <input
               id="dropzone-file"
@@ -143,20 +176,78 @@ export default function ImageUploader({ onUpload }: ImageUploaderProps) {
           )}
         </AnimatePresence>
 
+        <div className="mt-4"></div>
+
+        <div className="space-y-2">
+          <Label htmlFor="item-count" className="block text-sm font-medium text-gray-700">
+            Number of Items (1-10)
+          </Label>
+          <Input
+            id="item-count"
+            name="itemCount"
+            type="number"
+            min="1"
+            max="10"
+            value={formData.itemCount}
+            onChange={handleInputChange}
+            className="w-full"
+          />
+        </div>
+
+        <div className="mt-4"></div>
+
+        <div className="space-y-2">
+          <Label htmlFor="website" className="block text-sm font-medium text-gray-700">
+            Website to Search
+          </Label>
+          <Select value={formData.website} onValueChange={handleSelectChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a website" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Depop">Depop</SelectItem>
+              <SelectItem value="Amazon">Amazon</SelectItem>
+              <SelectItem value="Ebay">eBay</SelectItem>
+              <SelectItem value="Etsy">Etsy</SelectItem>
+              <SelectItem value="ALL">ALL</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="mt-4"></div>
+
+        <div className="space-y-2">
+          <Label className="block text-sm font-medium text-gray-700">Search Preference</Label>
+          <RadioGroup value={formData.sortBy} onValueChange={handleRadioChange}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Relevance" id="Relevance" />
+              <Label htmlFor="Relevance">Relevance</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Cheapest" id="Cheapest" />
+              <Label htmlFor="Cheapest">Cheapest</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="mt-4"></div>
+
         <AnimatePresence>
-          {selectedFile && (
+          {(selectedFile || preview) && (
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
               type="submit"
-              className="w-full mt-4 px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-300"
+              className="w-full mt-4 px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-300 flex items-center justify-center"
             >
-              Analyze Image
+              <Search className="w-4 h-4 mr-2" />
+              Analyse Image
             </motion.button>
           )}
         </AnimatePresence>
+
       </form>
     </div>
   );

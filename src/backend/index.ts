@@ -15,7 +15,10 @@ import { main } from "./main";
 import { ImageCaptionResult } from "@/app/types";
 
 export async function run(
-  search_string: string
+  searchString: string,
+  numberOfItems: number,
+  website: string,
+  sortBy: string
 ): Promise<ImageCaptionResult[]> {
   const stagehand = new Stagehand({
     ...StagehandConfig,
@@ -28,9 +31,12 @@ export async function run(
     page,
     context,
     stagehand,
-    search_string,
+    searchString,
+    numberOfItems,
+    website,
+    sortBy,
   });
   await stagehand.close();
 
-  return results;
+  return results || [];
 }

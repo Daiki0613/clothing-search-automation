@@ -5,12 +5,22 @@ export async function POST(req: NextRequest) {
   try {
     // Parse the incoming JSON body
     const body = await req.json();
-    const { caption } = body;
+    const { 
+      caption,
+      itemCount,
+      website,
+      sortBy 
+    } = body;
     // const searchString = "black quarter zip";
     
     console.log("Caption:", caption);
     
-    const results = await run_stagehand_app(caption);
+    const results = await run_stagehand_app(
+      caption,
+      itemCount,
+      website,
+      sortBy
+    );
 
     return NextResponse.json({ results: results });
   } catch (error) {
