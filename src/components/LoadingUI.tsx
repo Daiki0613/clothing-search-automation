@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ChromeDinoGame from "./ChromeDinoGame";
 
 interface LoadingUIProps {
   progress: number;
@@ -100,6 +101,8 @@ export default function LoadingUI({ progress }: LoadingUIProps) {
           Tip: Try to guess what the next emoji will be!
         </p>
       </div>
+      
+      <ChromeDinoGame />
     </div>
   );
 }
