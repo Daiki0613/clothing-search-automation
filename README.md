@@ -10,5 +10,12 @@
 
 Given a user-supplied image, the application will return the most similar clothing item from the image using a pre-trained model. State-of-the-art browser AI agents are used to enforce deterministic outputs and realistic results. 
 
-![alt text](screenshot1.jpg)
-![alt text](screenshot2.jpg)
+### Screenshots
+Example 1 with eight items, searching on Depop:
+![alt text](example1a.jpg)
+![alt text](example1b.jpg)
+![alt text](example1c.jpg)
+
+Example 2 with three items, searching on eBay:
+![alt text](example2a.jpg)
+![alt text](example2b.jpg)
