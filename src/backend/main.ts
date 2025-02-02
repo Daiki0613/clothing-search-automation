@@ -29,7 +29,7 @@ const API_KEY = process.env.API_KEY;
 
 const extractFirstImage = async (items: Item[]) => {
   // const results: Record<string, { url: string } | null> = {};
-  var results: Record<string, string | null> = {};
+  let results: Record<string, string | null> = {};
 
   for (const item of items) {
     try {
