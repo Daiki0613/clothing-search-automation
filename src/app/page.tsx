@@ -7,7 +7,7 @@ import LoadingUI from "../components/LoadingUI";
 import { ComparisonResult, ImageCaptionResult, Result } from "./types";
 
 export default function Home() {
-  const [caption, setCaption] = useState<string | null>(null);
+  const [caption, setCaption] = useState<string>("");
   const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +23,7 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setProgress(0);
+    setCaption("Sending image to AI...");
 
     try {
       console.log(formData);
@@ -36,7 +37,7 @@ export default function Home() {
           }
           return prevProgress + Math.random() * 2;
         });
-      }, 1000);
+      }, 2500);
 
       // First API call
       const response = await fetch("/api/get_caption", {
@@ -48,12 +49,19 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Caption generation failed, with status: " + response.status + " " + response.statusText + ". Base64Img chars: " + base64Image.length);  
+        throw new Error(
+          "Caption generation failed, with status: " +
+            response.status +
+            " " +
+            response.statusText +
+            ". Base64Img chars: " +
+            base64Image.length
+        );
       }
 
       const data = await response.json();
       console.log(data.caption);
-      setCaption(data.caption);
+      setCaption(`Searching for similar items to ${data.caption}...`);
 
       // Second API call
       const response2 = await fetch("/api/upload", {
@@ -74,6 +82,8 @@ export default function Home() {
       }
 
       const data2: ImageCaptionResult[] = (await response2.json()).results;
+      setResults(data2);
+      setCaption("Calculating match percentage...");
 
       console.log(data2);
       // Third API call
@@ -107,6 +117,7 @@ export default function Home() {
         })
       );
       console.log(results);
+      setCaption("Done!");
 
       setResults(results);
       // Clear interval and set to 100%
@@ -153,7 +164,7 @@ export default function Home() {
                 <p className="text-sm text-gray-600">Sort by: {formData.sortBy}</p>
               </div>
             </div>
-            <LoadingUI progress={progress} />
+            <LoadingUI progress={progress} caption={caption} />
           </div>
         )
       }

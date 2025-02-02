@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       sortBy 
     } = body;
     // const searchString = "black quarter zip";
-    
+
     console.log("Caption:", caption);
     
     const results = await run_stagehand_app(
@@ -25,6 +25,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ results: results });
   } catch (error) {
     console.error("Error during POST request:", error);
-    return NextResponse.json({ error: "Failed to process image caption" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process image caption" },
+      { status: 500 }
+    );
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // Adjust this value as needed
+    },
+  },
+};

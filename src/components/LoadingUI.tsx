@@ -6,6 +6,7 @@ import ChromeDinoGame from "./ChromeDinoGame";
 
 interface LoadingUIProps {
   progress: number;
+  caption: string;
 }
 
 const characters = ["🤖", "📷", "🖼️", "🔍", "💡", "🎨", "✨"];
@@ -27,26 +28,10 @@ const thoughtsToAdd = [
   "Preparing final report...",
 ];
 
-export default function LoadingUI({ progress }: LoadingUIProps) {
+export default function LoadingUI({ progress, caption }: LoadingUIProps) {
   const [currentCharacter, setCurrentCharacter] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
-  const [thoughts, setThoughts] = useState<Thought[]>([]);
-  const thoughtIdRef = useRef(0);
-
-  const addThought = (index: number) => {
-    if (index < thoughtsToAdd.length) {
-      setThoughts((prev) => [
-        ...prev,
-        { id: thoughtIdRef.current++, text: thoughtsToAdd[index] },
-      ]);
-
-      setTimeout(() => addThought(index + 1), Math.random() * 3000 + 2000);
-    }
-  };
-
-  useEffect(() => {
-    addThought(0);
-  }, []);
+  const [currentCaption, setCurrentCaption] = useState<Thought[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -56,6 +41,22 @@ export default function LoadingUI({ progress }: LoadingUIProps) {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Reset captions when caption prop changes
+    setCurrentCaption([]);
+
+    // Create a new thought with the updated caption
+    const newThought = {
+      id: Date.now(),
+      text: caption,
+    };
+
+    // Add new thought with animation timing
+    setTimeout(() => {
+      setCurrentCaption((prev) => [...prev, newThought]);
+    }, 300); // Small delay for smooth transition
+  }, [caption]);
 
   return (
     <div className="max-w-md mx-auto mt-8 bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -85,12 +86,16 @@ export default function LoadingUI({ progress }: LoadingUIProps) {
           </motion.div>
         </div>
         <div className="space-y-2 h-32 overflow-hidden">
-          <AnimatePresence>
-            {thoughts.slice(-3).map((thought) => (
-                <motion.div
-                key={thought.id} // `key` should be stable and unique
-                className="text-sm text-gray-600 animate-fade-in"
-                >
+          <AnimatePresence mode="popLayout">
+            {currentCaption.map((thought) => (
+              <motion.div
+                key={thought.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="text-sm text-gray-600"
+              >
                 {thought.text}
                 </motion.div>
             ))}
@@ -102,7 +107,7 @@ export default function LoadingUI({ progress }: LoadingUIProps) {
           Tip: Try to guess what the next emoji will be!
         </p>
       </div>
-      
+
       <ChromeDinoGame />
     </div>
   );
