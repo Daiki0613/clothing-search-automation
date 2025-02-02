@@ -144,7 +144,7 @@ export async function main({
 
   // TODO: CHANGE TO 5 / 10 when testing properly 
   const items = await page.extract({
-    instruction: "Extract the product URL (and not just endpoint) and price for the first 2 items in the search results",
+    instruction: "Extract the product URL (and not just endpoint) and price for the first 10 items in the search results",
     schema: z.object({
       items: z.array(
         z.object({
