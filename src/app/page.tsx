@@ -40,7 +40,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Caption generation failed");
+        throw new Error("Caption generation failed, with status: " + response.status + " " + response.statusText + ". Base64Img chars: " + base64Image.length);  
       }
 
       const data = await response.json();
