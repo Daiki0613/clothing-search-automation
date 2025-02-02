@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Result } from "@/app/types";
+import type { Result } from "@/app/types";
 
 interface ResultDisplayProps {
   results: Result[];
@@ -41,11 +41,13 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
               </div>
             </div>
             <div className="p-4">
-              <p className="text-lg font-semibold text-gray-800">
+              {result.title && (
+                <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                  {result.title}
+                </h3>
+              )}
+              <p className="text-base font-medium text-gray-800">
                 {result.price}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                
               </p>
               {result.match !== undefined && (
                 <p className="text-sm font-medium text-blue-600 mt-2">
@@ -53,7 +55,7 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
                 </p>
               )}
               {result.match_explanation && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                   {result.match_explanation}
                 </p>
               )}

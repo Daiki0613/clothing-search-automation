@@ -1,6 +1,7 @@
 export interface ComparisonResult {
   match: number;
   match_explanation: string;
+  title: string;
 }
 
 export interface ImageCaptionResult {
@@ -12,4 +13,5 @@ export interface ImageCaptionResult {
 export type Result = ImageCaptionResult & {
   match?: number;
   match_explanation?: string;
+  title?: string;
 };

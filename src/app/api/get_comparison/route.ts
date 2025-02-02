@@ -41,10 +41,12 @@ export async function POST(req: NextRequest) {
                 and the second is the closest match we found online.
                 Please provide your analysis in the following format:
 
-                MATCH PERCENTAGE: (provide a number between 0-100 representing how well these items match)
+                TITLE: (provide a title for the item in the second image we found)
+
+                MATCH PERCENTAGE: (provide a number between 0-100 representing how well these items coincide)
 
                 MATCH EXPLANATION:
-                (explain why this is a good match or not, being specific about colors, patterns, materials, and design elements)`,
+                (explain in 10 words or less, elaborating on why this is a good match or not)`,
             },
             {
               type: "image_url",
@@ -85,6 +87,7 @@ function formatComparison(content: string): ComparisonResult {
   const result: ComparisonResult = {
     match: 0,
     match_explanation: "",
+    title: "",
   };
 
   for (const section of sections) {
@@ -97,6 +100,8 @@ function formatComparison(content: string): ComparisonResult {
       result.match_explanation = trimmed
         .replace("MATCH EXPLANATION:", "")
         .trim();
+    } else if (trimmed.startsWith("TITLE:")) {
+      result.title = trimmed.replace("TITLE:", "").trim();
     }
   }
 
