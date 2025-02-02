@@ -45,7 +45,7 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
                 {result.price}
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                Similar product found
+                
               </p>
               {result.match !== undefined && (
                 <p className="text-sm font-medium text-blue-600 mt-2">

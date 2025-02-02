@@ -40,7 +40,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Caption generation failed");
+        throw new Error("Caption generation failed, with status: " + response.status + " " + response.statusText + ". Base64Img chars: " + base64Image.length);  
       }
 
       const data = await response.json();
@@ -117,8 +117,10 @@ export default function Home() {
       clearInterval(progressInterval);
       setProgress(100);
     } catch (err) {
-      setError("An error occurred while processing the image.");
-      console.error(err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Error: ${errorMessage}`);
+      console.error("Image processing failed:", err);
     } finally {
       setIsLoading(false);
     }
