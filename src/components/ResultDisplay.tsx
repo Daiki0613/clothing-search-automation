@@ -47,10 +47,10 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
             </div>
             <div className="p-4">
               <p className="text-lg font-semibold text-gray-800">
-                ${result.price.toFixed(2)}
+                {result.price}
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                Similar product found
+                
               </p>
             </div>
           </motion.div>

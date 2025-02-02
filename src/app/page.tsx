@@ -75,8 +75,10 @@ export default function Home() {
         setIsLoading(false);
       }, 1000);
     } catch (err) {
-      setError("An error occurred while processing the image.");
-      console.error(err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Error: ${errorMessage}`);
+      console.error("Image processing failed:", err);
     } finally {
       setIsLoading(false);
     }
