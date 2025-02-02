@@ -1,6 +1,7 @@
 import { Page, BrowserContext, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
 import dotenv from "dotenv";
+import { scrapeFirstImageUrl } from "./scrape_img_urls";
 
 dotenv.config();
 
@@ -27,65 +28,67 @@ interface ExtractionResponse {
 const API_KEY = process.env.API_KEY;
 
 const extractFirstImage = async (items: Item[]) => {
-  const results: Record<string, { url: string } | null> = {};
+  // const results: Record<string, { url: string } | null> = {};
+  var results: Record<string, string | null> = {};
 
   for (const item of items) {
     try {
       console.log(`Extracting image for ${item.websiteUrl}`);
       // Start extraction
-      const startRes = await fetch('https://api.extract.pics/v0/extractions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: item.websiteUrl }),
-      });
+      // const startRes = await fetch('https://api.extract.pics/v0/extractions', {
+      //   method: 'POST',
+      //   headers: {
+      //     Authorization: `Bearer ${API_KEY}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ url: item.websiteUrl }),
+      // });
 
-      const startJson: ExtractionResponse = await startRes.json();
-      if (!startRes.ok) {
-        console.error(`Failed to start extraction for ${item.websiteUrl}`, startJson);
-        results[item.websiteUrl] = null;
-        continue;
-      }
+      // const startJson: ExtractionResponse = await startRes.json();
+      // if (!startRes.ok) {
+      //   console.error(`Failed to start extraction for ${item.websiteUrl}`, startJson);
+      //   results[item.websiteUrl] = null;
+      //   continue;
+      // }
 
-      const id = startJson.data.id;
-      let status = 'pending';
-      let images: { url: string; id: string }[] = [];
+      // const id = startJson.data.id;
+      // let status = 'pending';
+      // let images: { url: string; id: string }[] = [];
 
-      // Poll for extraction status
-      while (status !== 'done' && status !== 'error') {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // // Poll for extraction status
+      // while (status !== 'done' && status !== 'error') {
+      //   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const statusRes = await fetch(`https://api.extract.pics/v0/extractions/${id}`, {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${API_KEY}` },
-        });
+      //   const statusRes = await fetch(`https://api.extract.pics/v0/extractions/${id}`, {
+      //     method: 'GET',
+      //     headers: { Authorization: `Bearer ${API_KEY}` },
+      //   });
 
-        const statusJson: ExtractionResponse = await statusRes.json();
-        status = statusJson.data.status;
-        images = statusJson.data.images;
-      }
+      //   const statusJson: ExtractionResponse = await statusRes.json();
+      //   status = statusJson.data.status;
+      //   images = statusJson.data.images;
+      // }
 
-      console.log(`Extraction for ${item.websiteUrl} is ${status}`);
+      // console.log(`Extraction for ${item.websiteUrl} is ${status}`);
 
-      // Find first image URL is a valid image URL
-      const productImageUrl = images.find((image) => image.url.match(/\.(jpeg|jpg|gif|png)$/))?.url;
+      // // Find first image URL is a valid image URL
+      // const productImageUrl = images.find((image) => image.url.match(/\.(jpeg|jpg|gif|png)$/))?.url;
+
+      const productImageUrl = await scrapeFirstImageUrl(item.websiteUrl);
 
       console.log(productImageUrl);
 
-      results[item.websiteUrl] = productImageUrl ? { url: productImageUrl } : null;
+      results[item.websiteUrl] = productImageUrl;
     } catch (error) {
       console.error(`Error processing ${item.websiteUrl}:`, error);
       results[item.websiteUrl] = null;
     }
   }
 
-  // Add results.url to items as a new imageUrl property
   const itemsWithImages = items.map((item) => ({
     websiteUrl: item.websiteUrl,
     price: item.price,
-    imageUrl: results[item.websiteUrl]?.url || null, // Ensure safe access
+    imageUrl: results[item.websiteUrl], 
   }));
 
   return itemsWithImages;

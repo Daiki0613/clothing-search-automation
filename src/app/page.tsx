@@ -70,7 +70,6 @@ export default function Home() {
       <ImageUploader onUpload={handleUpload} />
       {isLoading && <p className="text-center mt-4">Processing image...</p>}
       {error && <p className="text-center mt-4 text-red-500">{error}</p>}
-      {/* {results && <ResultDisplay results={results} />} */}
       {results && <ResultDisplay results={results} />}
     </main>
   );
