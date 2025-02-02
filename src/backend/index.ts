@@ -28,6 +28,6 @@ export async function run(search_string: string) {
     search_string,
   });
   await stagehand.close();
-  
+
   return results;
 }

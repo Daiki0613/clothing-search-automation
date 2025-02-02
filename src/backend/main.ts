@@ -88,25 +88,23 @@ const extractFirstImage = async (items: Item[]) => {
   const itemsWithImages = items.map((item) => ({
     websiteUrl: item.websiteUrl,
     price: item.price,
-    imageUrl: results[item.websiteUrl], 
+    imageUrl: results[item.websiteUrl],
   }));
 
   return itemsWithImages;
 };
 
-
 export async function main({
   page,
   context,
   stagehand,
-  search_string
+  search_string,
 }: {
   page: Page; // Playwright Page with act, extract, and observe methods
   context: BrowserContext; // Playwright BrowserContext
   stagehand: Stagehand; // Stagehand instance
   search_string: string;
 }) {
-
   console.log("Entered main.ts");
 
   // Start time
@@ -117,24 +115,30 @@ export async function main({
   // const url = "https://www.ebay.co.uk/";
   const url = "https://www.depop.com/";
 
-  await page.goto(url, {
-    waitUntil: "load",
-  }).then(() => {
-    console.log(`\n\n\nNavigated to ${url}`, "Navigation");
-  }).catch((error) => {
-    console.error(`Failed to navigate to ${url}:`, error);
-  });
+  await page
+    .goto(url, {
+      waitUntil: "load",
+    })
+    .then(() => {
+      console.log(`\n\n\nNavigated to ${url}`, "Navigation");
+    })
+    .catch((error) => {
+      console.error(`Failed to navigate to ${url}:`, error);
+    });
 
-
-  
-  await page.act({
-    action: `Submit '${search_string}' in the main search input field and click enter`,
-  }).then(() => {
-    console.log(`\n\n\nSearch for '${search_string}' submitted successfully`, "Search");
-  }).catch((error) => {
-    console.error(`Failed to submit search for '${search_string}':`, error);
-  });
-
+  await page
+    .act({
+      action: `Submit '${search_string}' in the main search input field and click enter`,
+    })
+    .then(() => {
+      console.log(
+        `\n\n\nSearch for '${search_string}' submitted successfully`,
+        "Search"
+      );
+    })
+    .catch((error) => {
+      console.error(`Failed to submit search for '${search_string}':`, error);
+    });
 
   // await page.act({
   //   action: "Sort search results by price from low to high (ascending)",
@@ -144,40 +148,43 @@ export async function main({
   //   console.error("Failed to sort search results by price:", error);
   // });
 
-
-  // TODO: CHANGE TO 5 / 10 when testing properly 
-  const items = await page.extract({
-    instruction: "Extract the product URL (and not just endpoint) and price for the first 10 items in the search results",
-    schema: z.object({
-      items: z.array(
-        z.object({
-          websiteUrl: z.string(),
-          price: z.string(),
-        })
-      ),
-    }),
-  }).then((details) => {
-    details.items.forEach((item, index) => {
-      // item.websiteUrl = url.substring(0, url.length - 1) + item.websiteUrl;
-      console.log(
-        `\n\n\nItem ${index + 1}:\nProduct URL: ${item.websiteUrl}\nPrice: ${item.price}`,
-        "Extract"
-      )
+  // TODO: CHANGE TO 5 / 10 when testing properly
+  const items = await page
+    .extract({
+      instruction:
+        "Extract the product URL (and not just endpoint) and price for the first 10 items in the search results",
+      schema: z.object({
+        items: z.array(
+          z.object({
+            websiteUrl: z.string(),
+            price: z.string(),
+          })
+        ),
+      }),
+    })
+    .then((details) => {
+      details.items.forEach((item, index) => {
+        // item.websiteUrl = url.substring(0, url.length - 1) + item.websiteUrl;
+        console.log(
+          `\n\n\nItem ${index + 1}:\nProduct URL: ${item.websiteUrl}\nPrice: ${
+            item.price
+          }`,
+          "Extract"
+        );
+      });
+      return details.items;
     });
-    return details.items;
-  });
-
 
   // End time
   const endTime = new Date();
   const timeDiff = endTime.getTime() - startTime.getTime();
   const timeDiffSeconds = timeDiff / 1000;
-  console.log(`\n\n\nThe script took ${timeDiffSeconds} seconds to run`, "Time");
-
-  
+  console.log(
+    `\n\n\nThe script took ${timeDiffSeconds} seconds to run`,
+    "Time"
+  );
 
   console.log(items);
-
 
   // Set items for debugging:
   // const testItems: Item[] = [
@@ -193,7 +200,6 @@ export async function main({
   // ]
 
   const itemsWithImageUrls = await extractFirstImage(items);
-
 
   console.log("*******ITEMS WITH IMAGE URLS*******");
   console.log(itemsWithImageUrls);
