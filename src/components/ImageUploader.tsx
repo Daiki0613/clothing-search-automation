@@ -206,9 +206,10 @@ export default function ImageUploader({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Depop">Depop</SelectItem>
-              <SelectItem value="Amazon">Amazon</SelectItem>
+              <SelectItem value="Vinted">Vinted</SelectItem>
               <SelectItem value="Ebay">eBay</SelectItem>
-              <SelectItem value="Etsy">Etsy</SelectItem>
+              <SelectItem value="Amazon">Amazon</SelectItem>
+              <SelectItem value="ASOS">ASOS</SelectItem>
               <SelectItem value="ALL">ALL</SelectItem>
             </SelectContent>
           </Select>
