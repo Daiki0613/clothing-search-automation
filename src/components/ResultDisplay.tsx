@@ -42,11 +42,21 @@ export default function ResultDisplay({ results }: ResultDisplayProps) {
             </div>
             <div className="p-4">
               <p className="text-lg font-semibold text-gray-800">
-                ${result.price}
+                {result.price}
               </p>
               <p className="text-sm text-gray-600 mt-1">
                 Similar product found
               </p>
+              {result.match !== undefined && (
+                <p className="text-sm font-medium text-blue-600 mt-2">
+                  Match: {result.match}%
+                </p>
+              )}
+              {result.match_explanation && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {result.match_explanation}
+                </p>
+              )}
             </div>
           </motion.div>
         ))}
